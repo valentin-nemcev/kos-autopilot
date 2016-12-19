@@ -14,6 +14,7 @@ print "Burntime: " + round(burntime, 2) + " s".
 
 wait until nextNode:eta < (burntime/2) + 30.
 
+sas off.
 lock steering to nextNode:deltaV.
 
 wait until nextNode:eta < (burntime/2).
