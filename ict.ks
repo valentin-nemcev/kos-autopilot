@@ -123,7 +123,7 @@ lock angleOffset to positiveMod(absMeanAnomaly(ship:obt) - absMeanAnomaly(target
 set meanAngleOffset to (ship:obt:lan + ship:obt:argumentOfPeriapsis) - (target:obt:lan + target:obt:argumentOfPeriapsis).
 
 lock synFreq to 1/target:obt:period - 1/ship:obt:period.
-set timeToTrans to 1/(360*synFreq)*angleOffset.
+set timeToTrans to 1/(360*synFreq)*angleOffset - ship:obt:period/2.
 lock transTrueAnomaly to ship:obt:trueAnomaly + deltaMeanAnFromDeltaTime(ship:obt, timeToTrans).
 lock targetPredictedIntersectTAn to  transTrueAnomaly + 180 + meanAngleOffset.
 lock intersectAlt to altAtTrueAnomaly(target:obt, targetPredictedIntersectTAn).
