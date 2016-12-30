@@ -38,3 +38,4 @@ until false {
 }
 
 lock throttle to 0.
+set ship:control:pilotmainthrottle to 0.
