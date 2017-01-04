@@ -18,15 +18,26 @@ function avgIsp {
   return isp.
 }
 
-function shipThrust {
+function getShipThrust {
   set totalThrust to 0.
 
   list engines in englist.
   for eng in englist {
       if eng:ignition set totalThrust to totalThrust + eng:thrust.
-  }.
+  }
   return totalThrust.
 }
+
+function getShipVacuumThrust {
+  set totalThrust to 0.
+
+  list engines in englist.
+  for eng in englist {
+      if eng:ignition set totalThrust to totalThrust + eng:thrust/eng:isp*eng:vacuumIsp.
+  }
+  return totalThrust.
+}
+
 
 function burn {
   parameter deltaVDelegate.

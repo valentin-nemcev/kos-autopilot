@@ -1,5 +1,26 @@
 @LAZYGLOBAL off.
 
+
+function vectorProjection {
+  parameter a.
+  parameter b.
+  return ((a * b) / (b * b)) * b.
+}
+
+function scalarProjection {
+  parameter a.
+  parameter b.
+  if b:mag = 0 return 0.
+  return (a * b) / b:mag.
+}
+
+function vectorAngleCos {
+  parameter a.
+  parameter b.
+  if a:mag = 0 or b:mag = 0 return 0.
+  return (a * b) / (a:mag * b:mag).
+}
+
 function bound {
   declare parameter lowerBound.
   declare parameter x.
