@@ -1,36 +1,28 @@
-list engines in engs.
-set isp to engs[0]:isp.
-set g0 to 9.82.
+runOncePath("lib_control").
 
-set burnTimeMin to 5.
-set cutoffTimeCoeff to 0.05.
-
-// print isp.
-// print g0 * isp * ln(ship:mass/(ship:mass - (ship:liquidfuel+ship:oxidizer)*0.005)).
-
-set deltaVFullMag to nextNode:deltaV:mag.
-
-set finalMass to ship:mass * constant:e^(-deltaVFullMag / (isp * g0)).
-set burntimeFull to (ship:mass - finalMass) / (ship:availableThrust / (isp * g0)).
-set burntime to max(burntimeFull, burnTimeMin).
+global burntime to getBurntime(nextNode:deltaV:mag).
 print "Burntime: " + round(burntime, 2) + "s".
 
+global maneuverStartTS to nextNode:eta - ((burntime/2) + 30).
 
-wait until nextNode:eta < (burntime/2) + 30.
+if maneuverStartTS < 0 {
+  print "Missed node".
+} else {
+  print "Warping to +" +  (time - time:seconds + maneuverStartTS):clock.
+  wait 3.
+  kUniverse:timeWarp:warpTo(time:seconds + maneuverStartTS).
 
-sas off.
-lock steering to nextNode:deltaV.
+  sas off.
+  lock steering to lookDirUp(nextNode:deltaV, ship:facing:topVector).
 
-wait until nextNode:eta < (burntime/2).
+  wait until nextNode:eta < (burntime/2).
 
-lock accTh to min(1, deltaVFullMag/(ship:availableThrust/ship:mass)/burnTimeMin).
-lock steeringTh to min(steeringManager:angleError, 5)/5.
-lock deltaVTh to nextNode:deltaV:mag/deltaVFullMag / cutoffTimeCoeff.
-lock throttle to (1 - steeringTh) * deltavTh * accTh.
+  burn({ return nextNode:deltaV. }).
 
-wait until nextNode:deltaV:mag < deltaVFullMag * 0.005.
+  lock steering to "kill".
 
-lock throttle to 0.
-lock steering to "kill".
+  wait 2.
 
-wait 1.
+  print "Maneuver complete, delta V left: " + round(nextNode:deltaV:mag, 4) + "m/s.".
+  remove nextNode.
+}

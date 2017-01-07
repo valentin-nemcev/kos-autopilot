@@ -1,6 +1,5 @@
 @LAZYGLOBAL off.
 
-
 function vectorProjection {
   parameter a.
   parameter b.

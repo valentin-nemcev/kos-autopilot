@@ -52,7 +52,7 @@ function apError {
   return 0.
 }
 
-set throttlePid to pidloop(1/apDelay, 0, 1/2).
+set throttlePid to pidloop(1/apDelay, 0, 1/2.5).
 set throttlePid:maxOutput to 0.
 set throttlePid:minOutput to -0.75.
 

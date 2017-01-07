@@ -26,20 +26,16 @@ function arctanh {
 }
 
 function eccentricAnFromTrueAn {
-  declare parameter o.
-  declare parameter tAn.
-  local cosE to (o:eccentricity + cos(tAn) / (1 + o:eccentricity*cos(tAn))).
-  local eAn is 0.
-  if (o:eccentricity < 1) {
-    // TODO https://www.reddit.com/r/Kos/comments/4tm0wq/two_common_mistakes_people_make_when_calculating/d5ixeoi/
-    set eAn to arccos(bound(-1, cosE, 1)).
-    local tAnMod to mod(tAn, 360).
-    if tAnMod > 180 { return tAn - tAnMod + 360 - eAn. }
-    else { return tAn - tAnMod + eAn. }
-  } else {
-    return arctanh(sqrt((o:eccentricity - 1)/(o:eccentricity + 1)) * tan(tAn/2)).
-  }
+  parameter o.
+  parameter tAn.
 
+  if (o:eccentricity < 1) {
+    local tAnRem to mod(tAn, 360).
+    local tAnQd to tAn - tAnRem.
+    return tAnQd + 2*arctan2(sqrt((1 - o:eccentricity)/(1 + o:eccentricity))*sin(tAnRem/2), cos(tAnRem/2)).
+  } else {
+    return 2*arctanh(sqrt((o:eccentricity - 1)/(o:eccentricity + 1)) * tan(tAn/2)).
+  }
 }
 
 function halfTrueAnomalyAtAlt {
@@ -103,22 +99,16 @@ function deltaTimeBetweenEAn {
   parameter o.
   parameter eAnS.
   parameter eAnF.
+  print eAnS.
+  print eAnF.
   local invN is sqrt(abs(o:semiMajorAxis)^3 / o:body:mu).
   if o:eccentricity < 1 {
+    return invN * ((constant:degToRad*eAnF - o:eccentricity*sin(eAnF)) - (constant:degToRad*eAnS - o:eccentricity*sin(eAnS))).
     return invN * (constant:degToRad*(eAnF - eAnS) - o:eccentricity*sin(eAnF - eAnS)).
   } else {
     return invN * ((o:eccentricity*sinh(eAnF) - constant:degToRad*eAnF) - (o:eccentricity*sinh(eAnS) - constant:degToRad*eAnS)).
   }
 
-}
-
-function etaToAlt {
-  declare parameter o.
-  declare parameter alt.
-  local tE to eccentricAnFromTrueAn(o, trueAnomalyAtAlt(o, alt)).
-  local E to eccentricAnFromTrueAn(o, o:trueAnomaly).
-  local result to sqrt(o:semiMajorAxis^3 / body:mu) * (constant:degToRad*(tE - E) - o:eccentricity*sin(tE - E)).
-  return result.
 }
 
 function pitchAtTAn {
@@ -138,12 +128,39 @@ function hohmannVelocityMag {
   parameter fromAlt.
   parameter toAlt.
   local transSemiMajorAxis to body:radius + (fromAlt + toAlt)/2.
-  local s is 1.
-  if abs(toAlt - fromAlt) > 1 set s to sign(toAlt - fromAlt).
-  return s * sqrt(body:mu * (2/(body:radius + fromAlt) - 1/transSemiMajorAxis)).
+  return sqrt(body:mu * (2/(body:radius + fromAlt) - 1/transSemiMajorAxis)).
 }
 
 function absMeanAnomaly {
   declare parameter o.
   return mod(o:argumentOfPeriapsis + o:lan + meanAnFromEccentricAn(o, eccentricAnFromTrueAn(o, o:trueAnomaly)), 360).
+}
+
+function drawTAn {
+  parameter o.
+  parameter tAn.
+  parameter alt to o:body:radius*0.25.
+  local an to solarPrimeVector*angleAxis(-o:lan, o:body:north:vector).
+  local obNorm to o:body:north:vector*angleAxis(-o:inclination, an).
+  local ap to an*angleAxis(-o:argumentOfPeriapsis, obNorm).
+  local v to ap*angleAxis(-tAn, obNorm).
+  local vd to vecDraw(o:body:position, v*(o:body:radius+alt), blue, round(tAn, 1) + "@" + round(alt/1000)).
+  set vd:show to true.
+  return vd.
+}
+
+
+function drawEAn {
+  parameter o.
+  parameter eAn.
+  local an to (solarPrimeVector*angleAxis(-o:lan, o:body:north:vector)):normalized.
+  local obNorm to o:body:north:vector*angleAxis(-o:inclination, an).
+  local ap to an*angleAxis(-o:argumentOfPeriapsis, obNorm).
+  local c to o:body:position + ap*(-o:semiMajorAxis*o:eccentricity).
+  local a to ap*o:semiMajorAxis.
+  local b to ap*angleAxis(-90, obNorm)*o:semiMajorAxis*sqrt(1 - o:eccentricity^2).
+  local v to a * cos(eAn) + b * sin(eAn).
+  local vd to vecDraw(c, v, green, round(eAn, 1)).
+  set vd:show to true.
+  return vd.
 }
