@@ -85,7 +85,7 @@ function burnAcc {
   lock acc to accDelegate().
 
   if ship:availableThrust = 0 print "Available thrust is 0".
-  set maxSteeringError to 2.5.
+  local maxSteeringError to 2.5.
 
   lock accTh to min(1, acc:mag/(ship:availableThrust/ship:mass)).
   lock steeringTh to min(vang(ship:facing:vector, acc)/maxSteeringError, 1).
